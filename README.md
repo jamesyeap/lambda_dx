@@ -1,5 +1,5 @@
 # Lambda DX
-A simple HTTP server that lets you run AWS Lambda functions locally.
+A simple wrapper that lets you run AWS Lambda functions locally through local HTTP endpoints.
 
 ## Example Usage
 ```go
