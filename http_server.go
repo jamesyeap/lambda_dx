@@ -1,6 +1,7 @@
 package lambda_dx
 
 import (
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -14,54 +15,40 @@ func NewBoxHttpServer() *BoxHttpServer {
 	return &BoxHttpServer{}
 }
 
-func (s *BoxHttpServer) AddLambdaFunction(path string, lambdaHandler LambdaHandlerFunction) {
-	newLambdaSpec := newLambdaSpec(path, lambdaHandler)
+func (s *BoxHttpServer) AddLambdaFunction(httpVerbs []string, path string, lambdaHandler LambdaHandlerFunction) {
+	newLambdaSpec := newLambdaSpec(httpVerbs, path, lambdaHandler)
 
 	s.lambdaSpecList = append(s.lambdaSpecList, newLambdaSpec)
 }
 
-func (s *BoxHttpServer) Start() {
+func (s *BoxHttpServer) Start(port int) {
 	// start a new router instance
 	r := mux.NewRouter()
 
 	// add all lambda routes to the router
 	for _, lambdaSpec := range s.lambdaSpecList {
-		r.HandleFunc(lambdaSpec.Path, lambdaSpec.Handler)
+		r.HandleFunc(lambdaSpec.Path, lambdaSpec.Handler).Methods(lambdaSpec.HttpVerbs...)
 	}
 
+	listenAddr := fmt.Sprintf(":%d", port)
+
 	// start the router
-	log.Print("Listening...")
-	err := http.ListenAndServe(":8080", r)
+	log.Printf("Listening on %s\n", listenAddr)
+	err := http.ListenAndServe(listenAddr, r)
+
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
 type LambdaSpec struct {
-	Path    string
-	Handler HttpHandlerFunction
+	HttpVerbs []string
+	Path      string
+	Handler   HttpHandlerFunction
 }
 
-func newLambdaSpec(path string, lambdaHandler LambdaHandlerFunction) *LambdaSpec {
+func newLambdaSpec(httpVerbs []string, path string, lambdaHandler LambdaHandlerFunction) *LambdaSpec {
 	httpHandler := NewLambdaToHttpAdapter(lambdaHandler)
 
-	return &LambdaSpec{Path: path, Handler: httpHandler}
+	return &LambdaSpec{HttpVerbs: httpVerbs, Path: path, Handler: httpHandler}
 }
-
-/*
-	r := mux.NewRouter()
-
-	// put all handlers here
-	r.HandleFunc("/query", common.NewLambdaToHttpAdapter(handler.QueryHandler))
-
-	// start the server
-	log.Print("Listening...")
-	err := http.ListenAndServe(":8080", r)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Hello")
-	r.HandleFunc("/query", common.NewLambdaToHttpAdapter(handler.QueryHandler))
-
-*/
