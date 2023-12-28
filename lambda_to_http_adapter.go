@@ -56,7 +56,7 @@ func convertHTTPRequestToAPIGatewayProxyRequest(req *http.Request) (events.APIGa
 		if err != nil {
 			return events.APIGatewayProxyRequest{}, err
 		}
-		body = base64.StdEncoding.EncodeToString(bytes)
+		body = string(bytes)
 	}
 
 	// prepare headers
