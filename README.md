@@ -15,13 +15,13 @@ func main() {
 	server := lambda_dx.NewBoxHttpServer()
 
 	/* add all the lambda functions for testing here */
-	server.AddLambdaFunction("/route_to_lambda_function_1", lambdahandler1.HandleRequest)
-	server.AddLambdaFunction("/route_to_lambda_function_2", lambdahandler2.HandleRequest)
+	server.AddLambdaFunction([]string{"GET"}, "/route_to_lambda_function_1", lambdahandler1.HandleRequest)
+	server.AddLambdaFunction([]string{"POST"}, "/route_to_lambda_function_2", lambdahandler2.HandleRequest)
 	// ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
 	// ... ... add more lambda functions for testing here ... ....
 	// ... ... ... ... ... ... ... ... ... ... ... ... ... ... ...
 
-	server.Start()
+	server.Start(8080) // start the server on localhost:8080
 }
 ```
 - [link to example](https://github.com/jamesyeap/lambda_dx_example)
