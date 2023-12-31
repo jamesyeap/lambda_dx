@@ -29,7 +29,19 @@ func (l *LambdaToHttpAdapter) ServeHttp(w http.ResponseWriter, r *http.Request) 
 
 	lambdaResponse, lambdaError := (*l.handler)(lambdaRequest)
 	if lambdaError != nil {
-		http.Error(w, err.Error(), lambdaResponse.StatusCode)
+		// if status code is unset, set it to 500
+		statusCode := lambdaResponse.StatusCode
+		if statusCode == 0 {
+			statusCode = 500
+		}
+
+		// if error message is unset, set it to a default error message
+		errorMessage := lambdaError.Error()
+		if errorMessage == "" {
+			errorMessage = "Operation failed due to an unspecified error."
+		}
+
+		http.Error(w, errorMessage, statusCode)
 		return
 	}
 
